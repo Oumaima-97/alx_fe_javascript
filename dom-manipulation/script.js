@@ -94,3 +94,62 @@ window.onload = function() {
         showRandomQuote();
     }
 };
+
+// Function to show quotes based on category
+function showQuotes(category = 'all') {
+    const quoteDisplay = document.getElementById("quoteDisplay");
+    quoteDisplay.innerHTML = ''; // Clear current quotes
+
+    // Filter quotes based on category
+    const filteredQuotes = category === 'all' ? quotes : quotes.filter(quote => quote.category === category);
+    
+    // Display filtered quotes
+    filteredQuotes.forEach(quote => {
+        const quoteElement = document.createElement('p');
+        quoteElement.innerHTML = `${quote.text} - <strong>${quote.category}</strong>`;
+        quoteDisplay.appendChild(quoteElement);
+    });
+}
+
+
+// Function to populate the category dropdown
+function populateCategories() {
+    const categoryFilter = document.getElementById("categoryFilter");
+    const categories = [...new Set(quotes.map(quote => quote.category))]; // Get unique categories
+
+    // Clear the current categories
+    categoryFilter.innerHTML = '<option value="all">All Categories</option>';
+
+    // Add each category as an option
+    categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = category;
+        categoryFilter.appendChild(option);
+    });
+
+    // Save the last selected filter to localStorage
+    const lastSelectedCategory = localStorage.getItem('lastSelectedCategory') || 'all';
+    categoryFilter.value = lastSelectedCategory;
+
+    // Show the quotes based on the selected category
+    showQuotes(lastSelectedCategory);
+}
+
+// Function to filter quotes based on category selection
+function filterQuotes() {
+    const categoryFilter = document.getElementById("categoryFilter");
+    const selectedCategory = categoryFilter.value;
+
+    // Save the selected category to localStorage
+    localStorage.setItem('lastSelectedCategory', selectedCategory);
+
+    // Show quotes for the selected category
+    showQuotes(selectedCategory);
+}
+
+// Initialize the form and quotes on page load
+window.onload = function() {
+    createAddQuoteForm();
+    populateCategories();
+};
