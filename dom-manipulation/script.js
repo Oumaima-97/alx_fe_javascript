@@ -302,3 +302,60 @@ async function syncWithServer() {
         console.error("Error syncing with server:", error);
     }
 }
+
+
+// Function to post quotes to the server (send data)
+async function postQuotesToServer() {
+    try {
+        const response = await fetch(apiEndpoint, {
+            method: "POST",  // Specify POST method
+            headers: {
+                "Content-Type": "application/json"  // Specify that we are sending JSON data
+            },
+            body: JSON.stringify(quotes)  // Send the quotes array as JSON
+        });
+
+        const result = await response.json();
+        console.log("Server Response:", result);
+        alert("Quotes successfully synced with server!");
+    } catch (error) {
+        console.error("Error posting quotes to the server:", error);
+        alert("Error syncing quotes with the server.");
+    }
+}
+
+// Function to sync quotes with the server
+async function syncQuotes() {
+    try {
+        // Fetch the server's latest quotes
+        const serverQuotes = await fetchQuotesFromServer();
+
+        // Conflict resolution: Compare local and server quotes
+        const localQuotesText = quotes.map(quote => quote.text).join(',');
+        const serverQuotesText = serverQuotes.map(quote => quote.text).join(',');
+
+        // If there are conflicts (text differs), alert and resolve by using server data
+        if (localQuotesText !== serverQuotesText) {
+            alert("Data conflict detected! Resolving by using server data.");
+            quotes = serverQuotes;
+
+            // Save the updated quotes to localStorage
+            localStorage.setItem('quotes', JSON.stringify(quotes));
+        }
+
+        // Update the UI to reflect the latest synced quotes
+        showQuotes();
+
+        // After syncing, post the quotes back to the server
+        postQuotesToServer();
+
+    } catch (error) {
+        console.error("Error syncing with server:", error);
+    }
+}
+
+// Function to save quotes to localStorage
+function saveQuotes() {
+    localStorage.setItem('quotes', JSON.stringify(quotes));
+}
+
