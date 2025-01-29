@@ -253,3 +253,52 @@ async function fetchQuotesFromServer() {
         return []; // Return empty array in case of an error
     }
 }
+
+// Function to post quotes to the server (send data)
+async function postQuotesToServer() {
+    try {
+        const response = await fetch(apiEndpoint, {
+            method: "POST",  // Specify POST method
+            headers: {
+                "Content-Type": "application/json"  // Specify that we are sending JSON data
+            },
+            body: JSON.stringify(quotes)  // Send the quotes array as JSON
+        });
+
+        const result = await response.json();
+        console.log("Server Response:", result);
+        alert("Quotes successfully synced with server!");
+    } catch (error) {
+        console.error("Error posting quotes to the server:", error);
+        alert("Error syncing quotes with the server.");
+    }
+}
+
+
+// Function to sync data with the server
+async function syncWithServer() {
+    try {
+        const serverQuotes = await fetchQuotesFromServer();
+
+        // Conflict resolution: Check if local quotes are different from server quotes
+        const localQuotesText = quotes.map(quote => quote.text).join(',');
+        const serverQuotesText = serverQuotes.map(quote => quote.text).join(',');
+
+        if (localQuotesText !== serverQuotesText) {
+            alert("Data conflict detected! Resolving by using server data.");
+            quotes = serverQuotes;
+
+            // Save the updated quotes to localStorage
+            localStorage.setItem('quotes', JSON.stringify(quotes));
+        }
+
+        // Update the UI to reflect the latest synced quotes
+        showQuotes();
+
+        // After syncing, post the quotes back to the server
+        postQuotesToServer();
+
+    } catch (error) {
+        console.error("Error syncing with server:", error);
+    }
+}
