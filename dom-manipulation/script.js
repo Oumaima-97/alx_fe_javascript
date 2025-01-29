@@ -1,3 +1,7 @@
+// Simulated API endpoint (using JSONPlaceholder for the purpose of this task)
+const apiEndpoint = "https://jsonplaceholder.typicode.com/posts";
+
+
 // Array to store quotes (each quote has text and category)
 let quotes = JSON.parse(localStorage.getItem('quotes')) || [
     { text: "The best way to predict the future is to invent it.", category: "Motivation" },
@@ -152,4 +156,82 @@ function filterQuotes() {
 window.onload = function() {
     createAddQuoteForm();
     populateCategories();
+};
+
+// Function to sync data with the server
+async function syncWithServer() {
+    try {
+        // Simulate fetching data from the server (get all quotes)
+        const response = await fetch(apiEndpoint);
+        const serverQuotes = await response.json();
+        
+        // Conflict resolution: Check if local quotes are different from server quotes
+        const localQuotesText = quotes.map(quote => quote.text).join(',');
+        const serverQuotesText = serverQuotes.map(quote => quote.title).join(',');
+
+        if (localQuotesText !== serverQuotesText) {
+            // If there's a discrepancy, notify the user and resolve conflict by server data
+            alert("Data conflict detected! Resolving by using server data.");
+            quotes = serverQuotes.map(quote => ({
+                text: quote.title, 
+                category: "General" // Default category for demo purposes
+            }));
+            
+            // Save the updated quotes to localStorage
+            localStorage.setItem('quotes', JSON.stringify(quotes));
+        }
+
+        // Update the UI to reflect the latest synced quotes
+        showQuotes();
+
+    } catch (error) {
+        console.error("Error syncing with server:", error);
+    }
+}
+
+// Function to save quotes to localStorage
+function saveQuotes() {
+    localStorage.setItem('quotes', JSON.stringify(quotes));
+}
+
+// Function to show quotes (updated version for conflict resolution)
+function showQuotes() {
+    const quoteDisplay = document.getElementById("quoteDisplay");
+    quoteDisplay.innerHTML = ''; // Clear current quotes
+
+    // Display all quotes
+    quotes.forEach(quote => {
+        const quoteElement = document.createElement('p');
+        quoteElement.innerHTML = `${quote.text} - <strong>${quote.category}</strong>`;
+        quoteDisplay.appendChild(quoteElement);
+    });
+}
+
+// Function to handle adding new quotes
+function addQuote() {
+    const newQuoteText = document.getElementById("newQuoteText").value;
+    const newQuoteCategory = document.getElementById("newQuoteCategory").value;
+
+    if (newQuoteText === "" || newQuoteCategory === "") {
+        alert("Please enter both a quote and a category.");
+        return;
+    }
+
+    // Add new quote to the array
+    quotes.push({ text: newQuoteText, category: newQuoteCategory });
+
+    // Save the updated quotes to localStorage
+    saveQuotes();
+
+    // Display the updated quotes
+    showQuotes();
+}
+
+// Function to periodically sync with the server every 30 seconds
+setInterval(syncWithServer, 30000);
+
+// Initialize quotes display when the page loads
+window.onload = function() {
+    showQuotes();
+    syncWithServer(); // Sync data immediately on load
 };
