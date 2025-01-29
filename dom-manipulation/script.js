@@ -376,3 +376,103 @@ async function fetchQuotesFromServer() {
         return []; // Return empty array in case of an error
     }
 }
+
+// Function to post quotes to the server (send data)
+async function postQuotesToServer() {
+    try {
+        const response = await fetch(apiEndpoint, {
+            method: "POST",  // Specify POST method
+            headers: {
+                "Content-Type": "application/json"  // Specify that we are sending JSON data
+            },
+            body: JSON.stringify(quotes)  // Send the quotes array as JSON
+        });
+
+        const result = await response.json();
+        console.log("Server Response:", result);
+        alert("Quotes successfully synced with server!"); // Success message
+    } catch (error) {
+        console.error("Error posting quotes to the server:", error);
+        alert("Error syncing quotes with the server.");
+    }
+}
+
+// Function to sync quotes with the server
+async function syncQuotes() {
+    try {
+        // Fetch the server's latest quotes
+        const serverQuotes = await fetchQuotesFromServer();
+
+        // Conflict resolution: Compare local and server quotes
+        const localQuotesText = quotes.map(quote => quote.text).join(',');
+        const serverQuotesText = serverQuotes.map(quote => quote.text).join(',');
+
+        // If there are conflicts (text differs), alert and resolve by using server data
+        if (localQuotesText !== serverQuotesText) {
+            alert("Data conflict detected! Resolving by using server data.");
+            quotes = serverQuotes;
+
+            // Save the updated quotes to localStorage
+            localStorage.setItem('quotes', JSON.stringify(quotes));
+        }
+
+        // Update the UI to reflect the latest synced quotes
+        showQuotes();
+
+        // After syncing, post the quotes back to the server
+        postQuotesToServer();
+
+        // Display success message
+        alert("Quotes synced with server!");
+
+    } catch (error) {
+        console.error("Error syncing with server:", error);
+    }
+}
+
+// Function to save quotes to localStorage
+function saveQuotes() {
+    localStorage.setItem('quotes', JSON.stringify(quotes));
+}
+
+// Function to show quotes (updated version for conflict resolution)
+function showQuotes() {
+    const quoteDisplay = document.getElementById("quoteDisplay");
+    quoteDisplay.innerHTML = ''; // Clear current quotes
+
+    // Display all quotes
+    quotes.forEach(quote => {
+        const quoteElement = document.createElement('p');
+        quoteElement.innerHTML = `${quote.text} - <strong>${quote.category}</strong>`;
+        quoteDisplay.appendChild(quoteElement);
+    });
+}
+
+// Function to handle adding new quotes
+function addQuote() {
+    const newQuoteText = document.getElementById("newQuoteText").value;
+    const newQuoteCategory = document.getElementById("newQuoteCategory").value;
+
+    if (newQuoteText === "" || newQuoteCategory === "") {
+        alert("Please enter both a quote and a category.");
+        return;
+    }
+
+    // Add new quote to the array
+    quotes.push({ text: newQuoteText, category: newQuoteCategory });
+
+    // Save the updated quotes to localStorage
+    saveQuotes();
+
+    // Display the updated quotes
+    showQuotes();
+}
+
+// Function to periodically sync with the server every 30 seconds
+setInterval(syncQuotes, 30000);
+
+// Initialize quotes display when the page loads
+window.onload = function() {
+    showQuotes();
+    syncQuotes(); // Sync data immediately on load
+};
