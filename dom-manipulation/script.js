@@ -1,3 +1,4 @@
+
 // Array to store quotes (each quote has text and category)
 const quotes = [
     { text: "The best way to predict the future is to invent it.", category: "Motivation" },
@@ -11,6 +12,23 @@ function showRandomQuote() {
     const randomIndex = Math.floor(Math.random() * quotes.length);
     quoteDisplay.innerHTML = `<p>${quotes[randomIndex].text} - <strong>${quotes[randomIndex].category}</strong></p>`;
 }
+
+// Function to create and display the add quote form
+function createAddQuoteForm() {
+    const formContainer = document.createElement('div');
+    formContainer.innerHTML = `
+      <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
+      <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
+      <button id="addQuoteButton">Add Quote</button>
+    `;
+    
+    // Append the form to the body
+    document.body.appendChild(formContainer);
+  
+    // Add event listener to the Add Quote button
+    document.getElementById('addQuoteButton').addEventListener('click', addQuote);
+  }
+  
 
 // Function to add a new quote
 function addQuote() {
@@ -38,3 +56,5 @@ document.getElementById("addQuote").addEventListener("click", addQuote);
 
 // Show a quote when the page loads
 showRandomQuote();
+
+
