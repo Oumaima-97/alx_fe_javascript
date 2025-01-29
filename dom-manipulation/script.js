@@ -235,3 +235,21 @@ window.onload = function() {
     showQuotes();
     syncWithServer(); // Sync data immediately on load
 };
+
+// Function to fetch quotes from the server
+async function fetchQuotesFromServer() {
+    try {
+        // Fetch data from the mock server (JSONPlaceholder)
+        const response = await fetch(apiEndpoint);
+        const serverQuotes = await response.json();
+
+        // Convert server data to the required format (if necessary)
+        return serverQuotes.map(quote => ({
+            text: quote.title,  // Using title as quote text for this mock
+            category: "General" // Default category for demo purposes
+        }));
+    } catch (error) {
+        console.error("Error fetching quotes from the server:", error);
+        return []; // Return empty array in case of an error
+    }
+}
